@@ -3,7 +3,9 @@
   box-sizing: border-box;
 }
 
+/* 淺色配色(預設) */
 :root {
+  color-scheme: light;
   --bg: #f4f5f7;
   --surface: #ffffff;
   --text: #1f2328;
@@ -12,6 +14,23 @@
   --accent: #1f883d;
   --accent-hover: #1a7f37;
   --danger: #cf222e;
+  --danger-soft: rgba(207, 34, 46, 0.1);
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+/* 深色配色:由 app.js 在 <html> 上設定 data-theme="dark" */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --text: #e6edf3;
+  --text-muted: #8d96a0;
+  --border: #30363d;
+  --accent: #238636;
+  --accent-hover: #2ea043;
+  --danger: #ff7b72;
+  --danger-soft: rgba(255, 123, 114, 0.15);
+  --shadow: rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -34,13 +53,49 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
 h1 {
   margin: 0 0 20px;
   font-size: 1.5rem;
   text-align: center;
+}
+
+/* ---------- 標題列(標題 + 深色模式按鈕) ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  flex: 1;
+  margin: 0;
+  text-align: left;
+}
+
+.btn-theme {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-theme:hover {
+  border-color: var(--text-muted);
+}
+
+.btn-theme:focus-visible,
+.filter-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ---------- 新增表單 ---------- */
@@ -79,6 +134,37 @@ h1 {
 
 .btn-add:hover {
   background: var(--accent-hover);
+}
+
+/* ---------- 篩選按鈕 ---------- */
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* 目前選中的篩選按鈕:實心綠底 + 粗體 */
+.filter-btn.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
 }
 
 /* ---------- 清單 ---------- */
@@ -134,7 +220,7 @@ h1 {
 }
 
 .btn-delete:hover {
-  background: rgba(207, 34, 46, 0.1);
+  background: var(--danger-soft);
 }
 
 /* ---------- 空狀態與頁尾 ---------- */

@@ -4,11 +4,280 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的待辦清單</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+/* ---------- 基本設定 ---------- */
+* {
+  box-sizing: border-box;
+}
+
+/* 淺色配色(預設) */
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --text: #1f2328;
+  --text-muted: #656d76;
+  --border: #d0d7de;
+  --accent: #1f883d;
+  --accent-hover: #1a7f37;
+  --danger: #cf222e;
+  --danger-soft: rgba(207, 34, 46, 0.1);
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+/* 深色配色:在 <html> 上設定 data-theme="dark" */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --text: #e6edf3;
+  --text-muted: #8d96a0;
+  --border: #30363d;
+  --accent: #238636;
+  --accent-hover: #2ea043;
+  --danger: #ff7b72;
+  --danger-soft: rgba(255, 123, 114, 0.15);
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  min-height: 100vh;
+  font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ---------- 版面容器(置中、RWD) ---------- */
+.app {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* ---------- 標題列(標題 + 深色模式按鈕) ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  flex: 1;
+  margin: 0;
+  text-align: left;
+}
+
+.btn-theme {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-theme:hover {
+  border-color: var(--text-muted);
+}
+
+.btn-theme:focus-visible,
+.filter-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- 新增表單 ---------- */
+.todo-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.todo-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.todo-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.btn-add {
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: var(--accent-hover);
+}
+
+/* ---------- 篩選按鈕 ---------- */
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* 目前選中的篩選按鈕:實心綠底 + 粗體 */
+.filter-btn.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- 清單 ---------- */
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.todo-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.todo-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* 已完成的樣式:刪除線 + 淡化 */
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.btn-delete {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--danger);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: var(--danger-soft);
+}
+
+/* ---------- 空狀態與頁尾 ---------- */
+.empty-state {
+  margin: 16px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.app-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ---------- 無障礙:僅供螢幕閱讀器 ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- 小螢幕微調 ---------- */
+@media (max-width: 420px) {
+  .app {
+    padding: 16px;
+  }
+
+  .todo-form {
+    flex-direction: column;
+  }
+}
+  </style>
 </head>
 <body>
   <main class="app">
-    <h1>📝 我的待辦清單</h1>
+    <!-- 標題列:左邊標題,右邊深色模式切換按鈕(文字依目前主題填入) -->
+    <header class="app-header">
+      <h1>📝 我的待辦清單</h1>
+      <button id="theme-toggle" class="btn-theme" type="button"></button>
+    </header>
 
     <!-- 新增待辦的表單 -->
     <form id="todo-form" class="todo-form" autocomplete="off">
@@ -24,7 +293,14 @@
       <button type="submit" class="btn-add">新增</button>
     </form>
 
-    <!-- 待辦清單本體,內容由 app.js 動態產生 -->
+    <!-- 篩選按鈕:全部 / 未完成 / 已完成,點選的按鈕加上 active 樣式 -->
+    <div id="filters" class="filters" role="group" aria-label="篩選待辦事項">
+      <button type="button" class="filter-btn active" data-filter="all">全部</button>
+      <button type="button" class="filter-btn" data-filter="active">未完成</button>
+      <button type="button" class="filter-btn" data-filter="completed">已完成</button>
+    </div>
+
+    <!-- 待辦清單本體,內容動態產生 -->
     <ul id="todo-list" class="todo-list" aria-live="polite"></ul>
 
     <!-- 清單為空時顯示的提示 -->
@@ -35,6 +311,194 @@
     </footer>
   </main>
 
-  <script src="app.js"></script>
+  <script>
+// ===== 我的待辦清單 =====
+// 純前端實作,不使用任何框架或套件。
+
+// 取得畫面上會用到的元素
+const form = document.getElementById('todo-form');
+const input = document.getElementById('todo-input');
+const list = document.getElementById('todo-list');
+const emptyState = document.getElementById('empty-state');
+const remainingCount = document.getElementById('remaining-count');
+const filterBar = document.getElementById('filters');
+const filterButtons = filterBar.querySelectorAll('.filter-btn');
+const themeButton = document.getElementById('theme-toggle');
+const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+// 所有待辦事項都放在這個陣列裡
+// 每一筆的格式:{ id: '169...', text: '買牛奶', completed: false }
+let todos = [];
+
+// 目前的篩選條件:'all' 全部 / 'active' 未完成 / 'completed' 已完成
+let currentFilter = 'all';
+
+// 各篩選條件下清單為空時顯示的提示文字
+const EMPTY_MESSAGES = {
+  all: '還沒有任何待辦事項,新增一個吧!',
+  active: '太棒了,目前沒有未完成的待辦事項!',
+  completed: '還沒有已完成的待辦事項。',
+};
+
+// 使用者手動選過的主題;沒選過就是 null,會跟隨作業系統設定
+let selectedTheme = null;
+
+// ---------- 主題 ----------
+
+/** 目前生效的主題:有手動選擇就用手動的,否則跟隨作業系統的深淺色設定 */
+function getEffectiveTheme() {
+  if (selectedTheme) return selectedTheme;
+  return systemDarkQuery.matches ? 'dark' : 'light';
+}
+
+/** 把生效的主題套用到頁面上,並更新按鈕文字 */
+function applyTheme() {
+  const theme = getEffectiveTheme();
+  document.documentElement.dataset.theme = theme;
+
+  // 按鈕顯示的是「切換後」的主題
+  themeButton.textContent = theme === 'dark' ? '☀️ 淺色模式' : '🌙 深色模式';
+}
+
+// ---------- 畫面繪製 ----------
+
+/** 依照目前的篩選條件,回傳要顯示的待辦事項 */
+function getVisibleTodos() {
+  if (currentFilter === 'active') return todos.filter((todo) => !todo.completed);
+  if (currentFilter === 'completed') return todos.filter((todo) => todo.completed);
+  return todos;
+}
+
+/** 依照目前的 todos 陣列與篩選條件,重新畫出整份清單 */
+function render() {
+  const visibleTodos = getVisibleTodos();
+  list.replaceChildren();
+
+  visibleTodos.forEach((todo) => {
+    const item = document.createElement('li');
+    item.className = todo.completed ? 'todo-item completed' : 'todo-item';
+    item.dataset.id = todo.id;
+
+    // 完成勾選框
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = todo.completed;
+    checkbox.setAttribute('aria-label', `標記「${todo.text}」為完成`);
+
+    // 待辦文字
+    const text = document.createElement('span');
+    text.className = 'todo-text';
+    text.textContent = todo.text;
+
+    // 刪除按鈕
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'btn-delete';
+    deleteButton.textContent = '✕';
+    deleteButton.setAttribute('aria-label', `刪除「${todo.text}」`);
+
+    item.append(checkbox, text, deleteButton);
+    list.append(item);
+  });
+
+  // 清單為空時顯示對應篩選條件的提示文字
+  emptyState.hidden = visibleTodos.length > 0;
+  emptyState.textContent = EMPTY_MESSAGES[currentFilter];
+
+  // 篩選按鈕的選中樣式(同時更新 aria-pressed 給螢幕閱讀器)
+  filterButtons.forEach((button) => {
+    const active = button.dataset.filter === currentFilter;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+
+  // 未完成數量永遠算全部待辦,不受篩選影響
+  const remaining = todos.filter((todo) => !todo.completed).length;
+  remainingCount.textContent = `未完成:${remaining} 項`;
+}
+
+// ---------- 操作行為 ----------
+
+/** 產生一組不會重複的 id(時間戳 + 隨機碼) */
+function createId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** 新增一筆待辦 */
+function addTodo(text) {
+  todos.push({
+    id: createId(),
+    text,
+    completed: false,
+  });
+  render();
+}
+
+/** 切換某一筆待辦的完成狀態 */
+function toggleTodo(id) {
+  todos = todos.map((todo) =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  );
+  render();
+}
+
+/** 刪除某一筆待辦 */
+function deleteTodo(id) {
+  todos = todos.filter((todo) => todo.id !== id);
+  render();
+}
+
+// ---------- 事件綁定 ----------
+
+// 送出表單 = 新增待辦
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  const text = input.value.trim();
+  if (!text) return; // 空白內容不新增
+
+  addTodo(text);
+  input.value = '';
+  input.focus();
+});
+
+// 用事件委派處理清單內的點擊(勾選完成 / 刪除)
+list.addEventListener('click', (event) => {
+  const item = event.target.closest('.todo-item');
+  if (!item) return;
+
+  const id = item.dataset.id;
+
+  if (event.target.matches('input[type="checkbox"]')) {
+    toggleTodo(id);
+  } else if (event.target.matches('.btn-delete')) {
+    deleteTodo(id);
+  }
+});
+
+// 點選篩選按鈕 = 切換篩選條件
+filterBar.addEventListener('click', (event) => {
+  const button = event.target.closest('.filter-btn');
+  if (!button) return;
+
+  currentFilter = button.dataset.filter;
+  render();
+});
+
+// 切換深色 / 淺色模式
+themeButton.addEventListener('click', () => {
+  selectedTheme = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+  applyTheme();
+});
+
+// 使用者沒手動選過時,作業系統深淺色變更要即時跟著變
+systemDarkQuery.addEventListener('change', () => {
+  if (!selectedTheme) applyTheme();
+});
+
+// 頁面載入時先套用主題,再畫一次清單
+applyTheme();
+render();
+  </script>
 </body>
 </html>
